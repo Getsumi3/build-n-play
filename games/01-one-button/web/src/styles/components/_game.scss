@@ -1,38 +1,11 @@
 .game {
-  display: grid;
-  width: min(100%, var(--container-width));
-  gap: var(--space-6);
-  margin-inline: auto;
-  padding: var(--page-gutter);
-
-  &__header {
-    text-align: center;
-  }
-
-  &__title {
-    margin: 0;
-    font-size: clamp(2rem, 5vw, 3rem);
-  }
-
-  &__subtitle {
-    color: var(--color-text-muted);
-  }
-
-  &__stage {
-    overflow: hidden;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    background: var(--color-surface);
-  }
+  width: 100%;
+  min-height: 100vh;
+  background: #000;
 
   &__canvas {
+    display: block;
     width: 100%;
-    height: auto;
-    aspect-ratio: 4 / 3;
-  }
-
-  &__footer {
-    color: var(--color-text-muted);
-    text-align: center;
+    height: 100vh;
   }
 }
