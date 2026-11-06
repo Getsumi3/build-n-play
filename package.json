@@ -4,9 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
-    "preview": "vite preview",
+    "dev": "vite games/01-one-button/web",
+    "build": "tsc -p games/01-one-button/web/tsconfig.json && vite build games/01-one-button/web",
+    "preview": "vite preview games/01-one-button/web",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier . --write",
