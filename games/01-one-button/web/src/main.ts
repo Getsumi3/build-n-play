@@ -166,24 +166,15 @@ const obstacle: ObstacleProps = {
         }
     },
     primitive(width: number) {
-        const centerX = this.lane === "left" ? width * world.bb.left : width * world.bb.right;
+        const laneWidth = (width * (world.bb.right - world.bb.left)) / 2;
 
-        const a = [centerX, this.y],
-            b = [centerX, this.y + 60],
-            c = [centerX + (this.lane === "left" ? 50 : -50), this.y + 30];
+        const x = this.lane === "left" ? width * world.bb.left : width * world.bb.left + laneWidth;
 
-        ctx.strokeStyle = "#f9f9f9";
-        ctx.lineWidth = 3;
-        ctx.shadowColor = "#ff0000";
+        ctx.fillStyle = "#fff";
+        ctx.shadowColor = "#00eaff";
         ctx.shadowBlur = 12;
 
-        ctx.beginPath();
-        ctx.moveTo(a[0], a[1]);
-        ctx.lineTo(b[0], b[1]);
-        ctx.lineTo(c[0], c[1]);
-        ctx.closePath();
-
-        ctx.stroke();
+        ctx.fillRect(x, this.y, laneWidth, 12);
 
         ctx.shadowBlur = 0;
     },
