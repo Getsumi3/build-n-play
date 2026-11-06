@@ -6,24 +6,28 @@ A personal game development challenge to build 10 small games, explore different
 
 ## Games
 
-1. One Button
-2. Tiny Dungeon
-3. Impossible Jump
-4. One More Wave
-5. The Room
-6. Lost in Space
-7. Tiny Shop
-8. Last Player Standing
-9. A Story in 5 Minutes
-10. The Final Boss
+| # | Game | Status |
+|---|---|---|
+| 01 | [One Button](games/01-one-button/README.md) | In development |
+| 02 | Tiny Dungeon | Planned |
+| 03 | Impossible Jump | Planned |
+| 04 | One More Wave | Planned |
+| 05 | The Room | Planned |
+| 06 | Lost in Space | Planned |
+| 07 | Tiny Shop | Planned |
+| 08 | Last Player Standing | Planned |
+| 09 | A Story in 5 Minutes | Planned |
+| 10 | The Final Boss | Planned |
 
-## Tech Stack
+## Repository
 
-- TypeScript
-- Vite
-- Canvas 2D
-- SCSS + BEM
-- ESLint + Prettier
+BuildNPlay is a multi-engine monorepo. Each game is an independent project and can use its own engine, dependencies, and release targets. Shared code and assets live at the repository level only when reuse is useful.
+
+See [Repository Structure](docs/REPOSITORY-STRUCTURE.md) for the layout and conventions.
+
+## First experiment
+
+One Button is a small 2D reaction arcade game built for the web with TypeScript, Vite, Canvas 2D, and SCSS.
 
 ## Follow the Journey
 
