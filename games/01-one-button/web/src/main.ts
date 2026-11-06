@@ -50,13 +50,13 @@ function draw() {
     player.draw();
     world.draw(width, height);
 }
-
+const obstacles: ObstacleProps[] = [];
 const world: WorldProps = createWorld(ctx, obstacles);
 const player: PlayerProps = createPlayer(ctx, world.bbox);
-const obstacles: ObstacleProps[] = [
+obstacles.push(
     createObstacle(ctx, world, player, "left", 0),
     createObstacle(ctx, world, player, "right", -300)
-];
+);
 
 function handleLaneChange() {
     player.activeLane = player.activeLane === "left" ? "right" : "left";

@@ -8,7 +8,7 @@ export type PlayerProps = {
     };
     activeLane: LaneDir;
     nextLaneX: number;
-    size: 100;
+    size: number;
     draw(): void;
     getX(width: number): number;
     setNextX(width: number, height: number): void;

@@ -1,4 +1,4 @@
-import type { PlayerProps, WorldProps } from "../../types.ts";
+import type { LaneDir, PlayerProps, WorldProps } from "../../types.ts";
 
 export function createPlayer(ctx: CanvasRenderingContext2D, bbox: WorldProps["bbox"]): PlayerProps {
     let state: Pick<PlayerProps, "transform" | "activeLane" | "nextLaneX" | "size"> = {
@@ -55,6 +55,24 @@ export function createPlayer(ctx: CanvasRenderingContext2D, bbox: WorldProps["bb
 
     return {
         ...state,
+        get activeLane() {
+            return state.activeLane;
+        },
+        get nextLaneX() {
+            return state.nextLaneX;
+        },
+        get size() {
+            return state.size;
+        },
+        set nextLaneX(value: number) {
+            state.nextLaneX = value;
+        },
+        set size(value: number) {
+            state.size = value;
+        },
+        set activeLane(value: LaneDir) {
+            state.activeLane = value;
+        },
         draw,
         getX,
         setNextX,

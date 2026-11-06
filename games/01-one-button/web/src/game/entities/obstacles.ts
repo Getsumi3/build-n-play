@@ -4,12 +4,12 @@ export function createObstacle(
     ctx: CanvasRenderingContext2D,
     world: WorldProps,
     player: PlayerProps,
-    lane: LaneDir,
-    y: number
+    lane: LaneDir = "left",
+    y: number = 0
 ): ObstacleProps {
     let state: Pick<ObstacleProps, "lane" | "y" | "size" | "wasPassed"> = {
-        lane: lane || "left",
-        y: y || 0,
+        lane: lane,
+        y: y,
         size: 1,
         wasPassed: false
     };
@@ -61,7 +61,27 @@ export function createObstacle(
         return false;
     }
     return {
-        ...state,
+        get lane() {
+            return state.lane;
+        },
+        set lane(value) {
+            state.lane = value;
+        },
+        get y() {
+            return state.y;
+        },
+        set y(value) {
+            state.y = value;
+        },
+        get size() {
+            return state.size;
+        },
+        get wasPassed() {
+            return state.wasPassed;
+        },
+        set wasPassed(value) {
+            state.wasPassed = value;
+        },
         draw,
         update,
         primitive,

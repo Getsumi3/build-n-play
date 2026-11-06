@@ -59,6 +59,30 @@ export function createWorld(ctx: CanvasRenderingContext2D, obstacles: ObstaclePr
     }
     return {
         ...state,
+        get lineY() {
+            return state.lineY;
+        },
+        get speed() {
+            return state.speed;
+        },
+        get loopId() {
+            return state.loopId;
+        },
+        get lastFrameTime() {
+            return state.lastFrameTime;
+        },
+        set lineY(value: number) {
+            state.lineY = value;
+        },
+        set speed(value: number) {
+            state.speed = value;
+        },
+        set loopId(value: number) {
+            state.loopId = value;
+        },
+        set lastFrameTime(value: number) {
+            state.lastFrameTime = value;
+        },
         update,
         draw,
         bgEffect,
