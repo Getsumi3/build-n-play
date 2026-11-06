@@ -39,7 +39,5 @@ export type ObstacleProps = {
     wasPassed: boolean;
     update(height: number, deltaTime: number): void;
     draw(width: number): void;
-    primitive(width: number): void;
-    collidesWithPlayer(): boolean;
     checkPassed(playerY: number): boolean;
 };

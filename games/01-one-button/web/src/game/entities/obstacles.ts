@@ -39,19 +39,6 @@ export function createObstacle(
 
         ctx.shadowBlur = 0;
     }
-    function collidesWithPlayer() {
-        const obstacleHeight = 12;
-        const playerTop = player.transform.position.y;
-        const playerBottom = playerTop + player.size;
-        const obstacleTop = state.y;
-        const obstacleBottom = state.y + obstacleHeight;
-
-        return (
-            state.lane === player.activeLane &&
-            obstacleBottom > playerTop &&
-            obstacleTop < playerBottom
-        );
-    }
     function checkPassed(playerY: number): boolean {
         if (!state.wasPassed && state.y > playerY + player.size) {
             state.wasPassed = true;
@@ -84,8 +71,6 @@ export function createObstacle(
         },
         draw,
         update,
-        primitive,
-        collidesWithPlayer,
         checkPassed
     };
 }
