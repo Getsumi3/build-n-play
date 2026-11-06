@@ -1,5 +1,5 @@
 import "./styles/main.scss";
-import type { PlayerProps, WorldProps } from "./types.ts";
+import type { ObstacleProps, PlayerProps, WorldProps } from "./types.ts";
 
 const app = document.querySelector<HTMLDivElement>("#app");
 
@@ -36,19 +36,16 @@ function resizeCanvas() {
     ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
 
     player.setNextX(width, height);
-    world.init();
     draw();
 }
-
 function draw() {
     const width = canvas.clientWidth;
     const height = canvas.clientHeight;
 
     ctx.clearRect(0, 0, width, height);
 
-    world.draw(width);
     player.draw();
-    bounds(width, height);
+    world.draw(width, height);
 }
 
 const player: PlayerProps = {
@@ -65,22 +62,22 @@ const player: PlayerProps = {
     },
     activeLane: "left",
     nextLaneX: 0,
+    size: 100,
     draw() {
-        const size = 100 * this.transform.scale.x;
-
         const { x, y } = this.transform.position;
 
         ctx.fillStyle = "#fff";
         ctx.shadowColor = "#00eaff";
         ctx.shadowBlur = 12;
 
-        ctx.fillRect(x, y, size, size);
+        ctx.fillRect(x, y, this.size, this.size);
 
         ctx.shadowBlur = 0;
     },
     getX(width: number) {
-        const centerX = player.activeLane === "left" ? width * 0.425 : width * 0.575;
-        return centerX - 50;
+        const laneBoundary = this.activeLane === "left" ? world.bb.left : world.bb.right;
+
+        return width * laneBoundary - (this.activeLane === "right" ? this.size : 0);
     },
     setNextX(width: number, height: number) {
         const x = this.getX(width);
@@ -102,14 +99,16 @@ const player: PlayerProps = {
         position.x += difference * 8 * deltaTime;
     }
 };
-
 const world: WorldProps = {
     lineY: 0,
     speed: 180,
     loopId: null,
     lastFrameTime: 0,
-    init() {
-        this.lineY = 0;
+    bb: {
+        left: 0.35,
+        right: 0.65,
+        top: 0,
+        bottom: 1
     },
     update(height: number, deltaTime: number) {
         this.lineY += this.speed * deltaTime;
@@ -118,35 +117,77 @@ const world: WorldProps = {
             this.lineY = 0;
         }
     },
-    draw(width: number) {
+    draw(width: number, height: number) {
+        this.bgEffect(width);
+        this.bounds(width, height);
+        obstacle.draw(width, height);
+    },
+    bgEffect(width: number) {
         ctx.fillStyle = "#fff";
         ctx.shadowColor = "#00eaff";
         ctx.shadowBlur = 12;
 
-        ctx.fillRect(width * 0.35, this.lineY, width * 0.3, 3);
+        ctx.fillRect(width * this.bb.left, this.lineY, width * (this.bb.right - this.bb.left), 3);
+
+        ctx.shadowBlur = 0;
+    },
+    bounds(width: number, height: number) {
+        const leftLane = width * this.bb.left;
+        const rightLane = width * this.bb.right;
+
+        ctx.strokeStyle = "#00eaff";
+        ctx.lineWidth = 2;
+        ctx.shadowColor = "#00eaff";
+        ctx.shadowBlur = 12;
+
+        [leftLane, rightLane].forEach((x) => {
+            ctx.beginPath();
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, height);
+            ctx.stroke();
+        });
 
         ctx.shadowBlur = 0;
     }
 };
-function bounds(width: number, height: number) {
-    const leftLane = width * 0.35;
-    const rightLane = width * 0.65;
+const obstacle: ObstacleProps = {
+    lane: "left",
+    y: 0,
+    size: 1,
+    draw(width: number, height: number) {
+        this.primitive(width, height);
+    },
+    update(height: number, deltaTime: number) {
+        this.y += world.speed * deltaTime;
 
-    ctx.strokeStyle = "#00eaff";
-    ctx.lineWidth = 2;
-    ctx.shadowColor = "#00eaff";
-    ctx.shadowBlur = 12;
+        if (this.y > height) {
+            this.y = -60;
+            this.lane = this.lane === "left" ? "right" : "left";
+        }
+    },
+    primitive(width: number) {
+        const centerX = this.lane === "left" ? width * world.bb.left : width * world.bb.right;
 
-    [leftLane, rightLane].forEach((x) => {
+        const a = [centerX, this.y],
+            b = [centerX, this.y + 60],
+            c = [centerX + (this.lane === "left" ? 50 : -50), this.y + 30];
+
+        ctx.strokeStyle = "#f9f9f9";
+        ctx.lineWidth = 3;
+        ctx.shadowColor = "#ff0000";
+        ctx.shadowBlur = 12;
+
         ctx.beginPath();
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x, height);
+        ctx.moveTo(a[0], a[1]);
+        ctx.lineTo(b[0], b[1]);
+        ctx.lineTo(c[0], c[1]);
+        ctx.closePath();
+
         ctx.stroke();
-    });
 
-    ctx.shadowBlur = 0;
-}
-
+        ctx.shadowBlur = 0;
+    }
+};
 function handleLaneChange() {
     player.activeLane = player.activeLane === "left" ? "right" : "left";
     player.nextLaneX = player.getX(canvas.clientWidth);
@@ -156,6 +197,7 @@ function gameLoop(timestamp: number) {
     world.lastFrameTime = timestamp;
 
     world.update(canvas.clientHeight, deltaTime);
+    obstacle.update(canvas.clientHeight, deltaTime);
     player.update(deltaTime);
 
     draw();
@@ -165,4 +207,4 @@ function gameLoop(timestamp: number) {
 window.addEventListener("resize", resizeCanvas);
 window.addEventListener("click", handleLaneChange);
 resizeCanvas();
-gameLoop(0);
+world.loopId = requestAnimationFrame(gameLoop);
