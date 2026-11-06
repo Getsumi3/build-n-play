@@ -1,4 +1,5 @@
 import "./styles/main.scss";
+import type { PlayerProps, WorldProps } from "./types.ts";
 
 const app = document.querySelector<HTMLDivElement>("#app");
 
@@ -24,37 +25,6 @@ if (!ctx) {
     throw new Error("Canvas context not found.");
 }
 
-type GameStateProps = {
-    currentLane: -1 | 1;
-    nextLaneX: number;
-};
-let gameState: GameStateProps = {
-    currentLane: -1,
-    nextLaneX: 0
-};
-
-type PlayerStateProps = {
-    transform: {
-        position: { x: number; y: number };
-        scale: { x: number; y: number };
-        rotation: number;
-    };
-    animationFrameId: number | null;
-};
-let playerState: PlayerStateProps = {
-    transform: {
-        position: {
-            x: 0,
-            y: 0
-        },
-        scale: {
-            x: 1,
-            y: 1
-        },
-        rotation: 0
-    },
-    animationFrameId: null
-};
 function resizeCanvas() {
     const width = canvas.clientWidth;
     const height = canvas.clientHeight;
@@ -66,6 +36,7 @@ function resizeCanvas() {
     ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
 
     player.setNextX(width, height);
+    world.init();
     draw();
 }
 
@@ -75,47 +46,88 @@ function draw() {
 
     ctx.clearRect(0, 0, width, height);
 
-    player.init();
+    world.draw(width);
+    player.draw();
     bounds(width, height);
-    debugCenterLane(width, height);
 }
 
-const player = {
-    init() {
-        const size = 100 * playerState.transform.scale.x;
+const player: PlayerProps = {
+    transform: {
+        position: {
+            x: 0,
+            y: 0
+        },
+        scale: {
+            x: 1,
+            y: 1
+        },
+        rotation: 0
+    },
+    activeLane: "left",
+    nextLaneX: 0,
+    draw() {
+        const size = 100 * this.transform.scale.x;
 
-        const { x, y } = playerState.transform.position;
+        const { x, y } = this.transform.position;
 
         ctx.fillStyle = "#fff";
+        ctx.shadowColor = "#00eaff";
+        ctx.shadowBlur = 12;
+
         ctx.fillRect(x, y, size, size);
+
+        ctx.shadowBlur = 0;
     },
     getX(width: number) {
-        const centerX = gameState.currentLane === -1 ? width * 0.425 : width * 0.575;
+        const centerX = player.activeLane === "left" ? width * 0.425 : width * 0.575;
         return centerX - 50;
     },
     setNextX(width: number, height: number) {
         const x = this.getX(width);
 
-        playerState.transform.position.x = x;
-        playerState.transform.position.y = height * 0.9 - 50;
+        this.transform.position.x = x;
+        this.transform.position.y = height * 0.9 - 50;
 
-        gameState.nextLaneX = x;
+        player.nextLaneX = x;
     },
-    animate() {
-        playerState.transform.position.x +=
-            (gameState.nextLaneX - playerState.transform.position.x) * 0.15;
-        if (Math.abs(gameState.nextLaneX - playerState.transform.position.x) < 0.5) {
-            playerState.transform.position.x = gameState.nextLaneX;
-            playerState.animationFrameId = null;
-            draw();
+    update(deltaTime: number) {
+        const position = this.transform.position;
+        const difference = player.nextLaneX - position.x;
+
+        if (Math.abs(difference) < 0.5) {
+            position.x = player.nextLaneX;
             return;
         }
 
-        draw();
-        playerState.animationFrameId = requestAnimationFrame(player.animate);
+        position.x += difference * 8 * deltaTime;
     }
 };
 
+const world: WorldProps = {
+    lineY: 0,
+    speed: 180,
+    loopId: null,
+    lastFrameTime: 0,
+    init() {
+        this.lineY = 0;
+    },
+    update(height: number, deltaTime: number) {
+        this.lineY += this.speed * deltaTime;
+
+        if (this.lineY > height) {
+            this.lineY = 0;
+        }
+    },
+    draw(width: number) {
+        ctx.fillStyle = "#fff";
+        ctx.shadowColor = "#00eaff";
+        ctx.shadowBlur = 12;
+
+        ctx.fillRect(width * 0.35, this.lineY, width * 0.3, 3);
+
+        ctx.shadowBlur = 0;
+    }
+};
 function bounds(width: number, height: number) {
     const leftLane = width * 0.35;
     const rightLane = width * 0.65;
@@ -135,38 +147,22 @@ function bounds(width: number, height: number) {
     ctx.shadowBlur = 0;
 }
 
-/**
- * utility debug line to distinguish screen center
- * @param width
- * @param height
- */
-function debugCenterLane(width: number, height: number) {
-    const centerLane = width * 0.5;
-
-    ctx.strokeStyle = "#ee1111";
-    ctx.lineWidth = 2;
-    ctx.shadowColor = "#ee1111";
-    ctx.shadowBlur = 12;
-
-    ctx.beginPath();
-    ctx.moveTo(centerLane, 0);
-    ctx.lineTo(centerLane, height);
-    ctx.stroke();
-
-    ctx.shadowBlur = 0;
-}
-
 function handleLaneChange() {
-    gameState.currentLane = gameState.currentLane === -1 ? 1 : -1;
-    gameState.nextLaneX = player.getX(canvas.clientWidth);
-
-    if (playerState.animationFrameId !== null) {
-        cancelAnimationFrame(playerState.animationFrameId);
-    }
-
-    playerState.animationFrameId = requestAnimationFrame(player.animate);
+    player.activeLane = player.activeLane === "left" ? "right" : "left";
+    player.nextLaneX = player.getX(canvas.clientWidth);
 }
+function gameLoop(timestamp: number) {
+    const deltaTime = (timestamp - world.lastFrameTime) / 1000;
+    world.lastFrameTime = timestamp;
 
+    world.update(canvas.clientHeight, deltaTime);
+    player.update(deltaTime);
+
+    draw();
+
+    world.loopId = requestAnimationFrame(gameLoop);
+}
 window.addEventListener("resize", resizeCanvas);
 window.addEventListener("click", handleLaneChange);
 resizeCanvas();
+gameLoop(0);
