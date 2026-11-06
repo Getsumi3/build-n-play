@@ -8,8 +8,8 @@ export function createObstacle(
     y: number = 0
 ): ObstacleProps {
     let state: Pick<ObstacleProps, "lane" | "y" | "size" | "wasPassed"> = {
-        lane: lane,
-        y: y,
+        lane,
+        y,
         size: 1,
         wasPassed: false
     };

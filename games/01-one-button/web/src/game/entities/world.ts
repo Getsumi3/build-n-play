@@ -71,6 +71,9 @@ export function createWorld(ctx: CanvasRenderingContext2D, obstacles: ObstaclePr
         get lastFrameTime() {
             return state.lastFrameTime;
         },
+        get bbox() {
+            return state.bbox;
+        },
         set lineY(value: number) {
             state.lineY = value;
         },
