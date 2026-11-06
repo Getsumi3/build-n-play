@@ -36,8 +36,10 @@ export type ObstacleProps = {
     lane: "left" | "right";
     y: number;
     size: number;
+    wasPassed: boolean;
     update(height: number, deltaTime: number): void;
     draw(width: number, height: number): void;
     primitive(width: number): void;
     collidesWithPlayer(): boolean;
+    checkPassed(playerY: number): boolean;
 };

@@ -154,6 +154,7 @@ const obstacle: ObstacleProps = {
     lane: "left",
     y: 0,
     size: 1,
+    wasPassed: false,
     draw(width: number, height: number) {
         this.primitive(width, height);
     },
@@ -162,7 +163,8 @@ const obstacle: ObstacleProps = {
 
         if (this.y > height) {
             this.y = -60;
-            this.lane = this.lane === "left" ? "right" : "left";
+            this.lane = Math.random() < 0.5 ? "left" : "right";
+            this.wasPassed = false;
         }
     },
     primitive(width: number) {
@@ -171,7 +173,7 @@ const obstacle: ObstacleProps = {
         const x = this.lane === "left" ? width * world.bb.left : width * world.bb.left + laneWidth;
 
         ctx.fillStyle = "#fff";
-        ctx.shadowColor = "#00eaff";
+        ctx.shadowColor = "#ff0000";
         ctx.shadowBlur = 12;
 
         ctx.fillRect(x, this.y, laneWidth, 12);
@@ -179,7 +181,7 @@ const obstacle: ObstacleProps = {
         ctx.shadowBlur = 0;
     },
     collidesWithPlayer() {
-        const obstacleHeight = 60;
+        const obstacleHeight = 12;
         const playerTop = player.transform.position.y;
         const playerBottom = playerTop + player.size;
         const obstacleTop = this.y;
@@ -190,51 +192,22 @@ const obstacle: ObstacleProps = {
             obstacleBottom > playerTop &&
             obstacleTop < playerBottom
         );
+    },
+    checkPassed(playerY: number): boolean {
+        if (!this.wasPassed && this.y > playerY + player.size) {
+            this.wasPassed = true;
+            return true;
+        }
+
+        return false;
     }
 };
 function handleLaneChange() {
-    if (isGameOver) {
-        restartGame();
-        return;
-    }
-
     player.activeLane = player.activeLane === "left" ? "right" : "left";
     player.nextLaneX = player.getX(canvas.clientWidth);
 }
-function drawGameOver() {
-    const width = canvas.clientWidth;
-    const height = canvas.clientHeight;
 
-    ctx.fillStyle = "rgba(0, 0, 0, 0.65)";
-    ctx.fillRect(0, 0, width, height);
-
-    ctx.fillStyle = "#fff";
-    ctx.font = "bold 36px sans-serif";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText("GAME OVER", width / 2, height / 2);
-}
-function restartGame() {
-    isGameOver = false;
-
-    player.activeLane = "left";
-    player.setNextX(canvas.clientWidth, canvas.clientHeight);
-
-    obstacle.lane = "left";
-    obstacle.y = -60;
-
-    world.lineY = 0;
-    world.lastFrameTime = 0;
-
-    world.loopId = requestAnimationFrame(gameLoop);
-}
-let isGameOver = false;
 function gameLoop(timestamp: number) {
-    if (isGameOver) {
-        drawGameOver();
-        return;
-    }
-
     const deltaTime = (timestamp - world.lastFrameTime) / 1000;
     world.lastFrameTime = timestamp;
 
@@ -242,8 +215,8 @@ function gameLoop(timestamp: number) {
     obstacle.update(canvas.clientHeight, deltaTime);
     player.update(deltaTime);
 
-    if (obstacle.collidesWithPlayer()) {
-        isGameOver = true;
+    if (obstacle.checkPassed(player.transform.position.y)) {
+        console.log("Obstacle passed!");
     }
 
     draw();
