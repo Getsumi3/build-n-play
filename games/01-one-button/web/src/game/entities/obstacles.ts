@@ -47,6 +47,18 @@ export function createObstacle(
 
         return false;
     }
+    function overlapsPlayer(): boolean {
+        const playerTop = player.transform.position.y;
+        const playerBottom = playerTop + player.size;
+        const obstacleTop = state.y;
+        const obstacleBottom = state.y + 12;
+
+        return (
+            state.lane === player.activeLane &&
+            obstacleBottom > playerTop &&
+            obstacleTop < playerBottom
+        );
+    }
     return {
         get lane() {
             return state.lane;
@@ -71,6 +83,7 @@ export function createObstacle(
         },
         draw,
         update,
-        checkPassed
+        checkPassed,
+        overlapsPlayer
     };
 }

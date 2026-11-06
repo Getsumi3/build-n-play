@@ -72,7 +72,7 @@ function gameLoop(timestamp: number) {
     player.update(deltaTime);
 
     obstacles.forEach((obstacle) => {
-        if (obstacle.checkPassed(player.transform.position.y)) {
+        if (obstacle.overlapsPlayer()) {
             console.log("Obstacle passed!");
         }
     });

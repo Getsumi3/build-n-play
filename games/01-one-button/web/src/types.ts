@@ -40,4 +40,5 @@ export type ObstacleProps = {
     update(height: number, deltaTime: number): void;
     draw(width: number): void;
     checkPassed(playerY: number): boolean;
+    overlapsPlayer(): boolean;
 };
