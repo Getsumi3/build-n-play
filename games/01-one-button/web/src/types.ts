@@ -39,4 +39,5 @@ export type ObstacleProps = {
     update(height: number, deltaTime: number): void;
     draw(width: number, height: number): void;
     primitive(width: number): void;
+    collidesWithPlayer(): boolean;
 };

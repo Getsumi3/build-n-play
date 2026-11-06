@@ -186,19 +186,74 @@ const obstacle: ObstacleProps = {
         ctx.stroke();
 
         ctx.shadowBlur = 0;
+    },
+    collidesWithPlayer() {
+        const obstacleHeight = 60;
+        const playerTop = player.transform.position.y;
+        const playerBottom = playerTop + player.size;
+        const obstacleTop = this.y;
+        const obstacleBottom = this.y + obstacleHeight;
+
+        return (
+            this.lane === player.activeLane &&
+            obstacleBottom > playerTop &&
+            obstacleTop < playerBottom
+        );
     }
 };
 function handleLaneChange() {
+    if (isGameOver) {
+        restartGame();
+        return;
+    }
+
     player.activeLane = player.activeLane === "left" ? "right" : "left";
     player.nextLaneX = player.getX(canvas.clientWidth);
 }
+function drawGameOver() {
+    const width = canvas.clientWidth;
+    const height = canvas.clientHeight;
+
+    ctx.fillStyle = "rgba(0, 0, 0, 0.65)";
+    ctx.fillRect(0, 0, width, height);
+
+    ctx.fillStyle = "#fff";
+    ctx.font = "bold 36px sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("GAME OVER", width / 2, height / 2);
+}
+function restartGame() {
+    isGameOver = false;
+
+    player.activeLane = "left";
+    player.setNextX(canvas.clientWidth, canvas.clientHeight);
+
+    obstacle.lane = "left";
+    obstacle.y = -60;
+
+    world.lineY = 0;
+    world.lastFrameTime = 0;
+
+    world.loopId = requestAnimationFrame(gameLoop);
+}
+let isGameOver = false;
 function gameLoop(timestamp: number) {
+    if (isGameOver) {
+        drawGameOver();
+        return;
+    }
+
     const deltaTime = (timestamp - world.lastFrameTime) / 1000;
     world.lastFrameTime = timestamp;
 
     world.update(canvas.clientHeight, deltaTime);
     obstacle.update(canvas.clientHeight, deltaTime);
     player.update(deltaTime);
+
+    if (obstacle.collidesWithPlayer()) {
+        isGameOver = true;
+    }
 
     draw();
 
