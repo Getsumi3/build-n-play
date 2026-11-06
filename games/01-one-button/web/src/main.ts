@@ -1,5 +1,8 @@
 import "./styles/main.scss";
 import type { ObstacleProps, PlayerProps, WorldProps } from "./types.ts";
+import { createPlayer } from "./game/entities/player.ts";
+import { createWorld } from "./game/entities/world.ts";
+import { createObstacle } from "./game/entities/obstacles.ts";
 
 const app = document.querySelector<HTMLDivElement>("#app");
 
@@ -48,160 +51,13 @@ function draw() {
     world.draw(width, height);
 }
 
-const player: PlayerProps = {
-    transform: {
-        position: {
-            x: 0,
-            y: 0
-        },
-        scale: {
-            x: 1,
-            y: 1
-        },
-        rotation: 0
-    },
-    activeLane: "left",
-    nextLaneX: 0,
-    size: 100,
-    draw() {
-        const { x, y } = this.transform.position;
+const world: WorldProps = createWorld(ctx, obstacles);
+const player: PlayerProps = createPlayer(ctx, world.bbox);
+const obstacles: ObstacleProps[] = [
+    createObstacle(ctx, world, player, "left", 0),
+    createObstacle(ctx, world, player, "right", -300)
+];
 
-        ctx.fillStyle = "#fff";
-        ctx.shadowColor = "#00eaff";
-        ctx.shadowBlur = 12;
-
-        ctx.fillRect(x, y, this.size, this.size);
-
-        ctx.shadowBlur = 0;
-    },
-    getX(width: number) {
-        const laneBoundary = this.activeLane === "left" ? world.bb.left : world.bb.right;
-
-        return width * laneBoundary - (this.activeLane === "right" ? this.size : 0);
-    },
-    setNextX(width: number, height: number) {
-        const x = this.getX(width);
-
-        this.transform.position.x = x;
-        this.transform.position.y = height * 0.9 - 50;
-
-        player.nextLaneX = x;
-    },
-    update(deltaTime: number) {
-        const position = this.transform.position;
-        const difference = player.nextLaneX - position.x;
-
-        if (Math.abs(difference) < 0.5) {
-            position.x = player.nextLaneX;
-            return;
-        }
-
-        position.x += difference * 8 * deltaTime;
-    }
-};
-const world: WorldProps = {
-    lineY: 0,
-    speed: 180,
-    loopId: null,
-    lastFrameTime: 0,
-    bb: {
-        left: 0.35,
-        right: 0.65,
-        top: 0,
-        bottom: 1
-    },
-    update(height: number, deltaTime: number) {
-        this.lineY += this.speed * deltaTime;
-
-        if (this.lineY > height) {
-            this.lineY = 0;
-        }
-    },
-    draw(width: number, height: number) {
-        this.bgEffect(width);
-        this.bounds(width, height);
-        obstacle.draw(width, height);
-    },
-    bgEffect(width: number) {
-        ctx.fillStyle = "#fff";
-        ctx.shadowColor = "#00eaff";
-        ctx.shadowBlur = 12;
-
-        ctx.fillRect(width * this.bb.left, this.lineY, width * (this.bb.right - this.bb.left), 3);
-
-        ctx.shadowBlur = 0;
-    },
-    bounds(width: number, height: number) {
-        const leftLane = width * this.bb.left;
-        const rightLane = width * this.bb.right;
-
-        ctx.strokeStyle = "#00eaff";
-        ctx.lineWidth = 2;
-        ctx.shadowColor = "#00eaff";
-        ctx.shadowBlur = 12;
-
-        [leftLane, rightLane].forEach((x) => {
-            ctx.beginPath();
-            ctx.moveTo(x, 0);
-            ctx.lineTo(x, height);
-            ctx.stroke();
-        });
-
-        ctx.shadowBlur = 0;
-    }
-};
-const obstacle: ObstacleProps = {
-    lane: "left",
-    y: 0,
-    size: 1,
-    wasPassed: false,
-    draw(width: number, height: number) {
-        this.primitive(width, height);
-    },
-    update(height: number, deltaTime: number) {
-        this.y += world.speed * deltaTime;
-
-        if (this.y > height) {
-            this.y = -60;
-            this.lane = Math.random() < 0.5 ? "left" : "right";
-            this.wasPassed = false;
-        }
-    },
-    primitive(width: number) {
-        const laneWidth = (width * (world.bb.right - world.bb.left)) / 2;
-
-        const x = this.lane === "left" ? width * world.bb.left : width * world.bb.left + laneWidth;
-
-        ctx.fillStyle = "#fff";
-        ctx.shadowColor = "#ff0000";
-        ctx.shadowBlur = 12;
-
-        ctx.fillRect(x, this.y, laneWidth, 12);
-
-        ctx.shadowBlur = 0;
-    },
-    collidesWithPlayer() {
-        const obstacleHeight = 12;
-        const playerTop = player.transform.position.y;
-        const playerBottom = playerTop + player.size;
-        const obstacleTop = this.y;
-        const obstacleBottom = this.y + obstacleHeight;
-
-        return (
-            this.lane === player.activeLane &&
-            obstacleBottom > playerTop &&
-            obstacleTop < playerBottom
-        );
-    },
-    checkPassed(playerY: number): boolean {
-        if (!this.wasPassed && this.y > playerY + player.size) {
-            this.wasPassed = true;
-            return true;
-        }
-
-        return false;
-    }
-};
 function handleLaneChange() {
     player.activeLane = player.activeLane === "left" ? "right" : "left";
     player.nextLaneX = player.getX(canvas.clientWidth);
@@ -212,12 +68,14 @@ function gameLoop(timestamp: number) {
     world.lastFrameTime = timestamp;
 
     world.update(canvas.clientHeight, deltaTime);
-    obstacle.update(canvas.clientHeight, deltaTime);
+    obstacles.forEach((obstacle) => obstacle.update(canvas.clientHeight, deltaTime));
     player.update(deltaTime);
 
-    if (obstacle.checkPassed(player.transform.position.y)) {
-        console.log("Obstacle passed!");
-    }
+    obstacles.forEach((obstacle) => {
+        if (obstacle.checkPassed(player.transform.position.y)) {
+            console.log("Obstacle passed!");
+        }
+    });
 
     draw();
 

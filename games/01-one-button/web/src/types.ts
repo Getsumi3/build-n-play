@@ -20,7 +20,7 @@ export type WorldProps = {
     speed: number;
     loopId: number | null;
     lastFrameTime: number;
-    bb: {
+    bbox: {
         left: number;
         right: number;
         top: number;
@@ -38,7 +38,7 @@ export type ObstacleProps = {
     size: number;
     wasPassed: boolean;
     update(height: number, deltaTime: number): void;
-    draw(width: number, height: number): void;
+    draw(width: number): void;
     primitive(width: number): void;
     collidesWithPlayer(): boolean;
     checkPassed(playerY: number): boolean;
