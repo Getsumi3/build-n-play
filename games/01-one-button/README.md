@@ -2,24 +2,30 @@
 
 **Status:** In development  
 **Type:** 2D reaction arcade  
-**Engine:** Web  
-**Stack:** TypeScript, Vite, Canvas 2D, SCSS
+**Platform:** Mobile-first web  
+**Stack:** TypeScript, Vite, Canvas 2D, SCSS, Web Audio API
 
 ## Concept
 
-A small arcade experiment built around one input: switch lanes at the right moment to avoid obstacles.
+A minimalist arcade game about switching between two lanes to avoid incoming obstacles. The player moves automatically, and the goal is to survive as long as possible.
 
-## Project
+## Gameplay
 
-The web implementation will live in this game's `web/` directory. Keep game-specific source, assets, dependencies, and build configuration inside that project. Shared code should be extracted only when another game has a real use for it.
+- Portrait layout designed for one-handed play.
+- Tap anywhere to switch lanes.
+- Obstacles approach from right to left.
+- The player stays in the lower half of the screen.
+- Every tap plays a short synthesized note.
+
+## Visual & Audio Direction
+
+Dark background, bright geometric shapes, and electric cyan glow. Simple synthesized notes add musical feedback without turning the game into a rhythm game.
 
 ## Development
 
-From the `web/` directory:
+From the repository root:
 
 ```bash
-npm install
 npm run dev
+npm run build
 ```
-
-See the root README for the overall BuildNPlay project.
