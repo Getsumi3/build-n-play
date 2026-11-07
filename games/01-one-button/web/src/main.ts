@@ -53,6 +53,7 @@ function draw() {
 const obstacles: ObstacleProps[] = [];
 const world: WorldProps = createWorld(ctx, obstacles);
 const player: PlayerProps = createPlayer(ctx, world.bbox);
+const OBSTACLE_GAP_TIME = 1.5;
 obstacles.push(
     createObstacle(ctx, world, player, "left", 0),
     createObstacle(ctx, world, player, "right", -300)
@@ -71,11 +72,7 @@ function gameLoop(timestamp: number) {
     obstacles.forEach((obstacle) => obstacle.update(canvas.clientHeight, deltaTime));
     player.update(deltaTime);
 
-    obstacles.forEach((obstacle) => {
-        if (obstacle.overlapsPlayer()) {
-            console.log("Obstacle passed!");
-        }
-    });
+    player.setOverlapping(obstacles.some((obstacle) => obstacle.overlapsPlayer()));
 
     draw();
 

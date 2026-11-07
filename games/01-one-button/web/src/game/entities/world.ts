@@ -1,6 +1,13 @@
 import type { ObstacleProps, WorldProps } from "../../types.ts";
 
 export function createWorld(ctx: CanvasRenderingContext2D, obstacles: ObstacleProps[]): WorldProps {
+    const initialSpeed = 180;
+    const speedIncrease = 20;
+    const speedInterval = 15;
+    const maxSpeed = 400;
+
+    let elapsedTime = 0;
+
     let state: Pick<WorldProps, "lineY" | "speed" | "loopId" | "lastFrameTime" | "bbox"> = {
         lineY: 0,
         speed: 180,
@@ -13,7 +20,14 @@ export function createWorld(ctx: CanvasRenderingContext2D, obstacles: ObstaclePr
             bottom: 1
         }
     };
+
     function update(height: number, deltaTime: number) {
+        elapsedTime += deltaTime;
+
+        const speedLevel = Math.floor(elapsedTime / speedInterval);
+
+        state.speed = Math.min(initialSpeed + speedLevel * speedIncrease, maxSpeed);
+
         state.lineY += state.speed * deltaTime;
 
         if (state.lineY > height) {

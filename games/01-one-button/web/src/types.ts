@@ -9,10 +9,12 @@ export type PlayerProps = {
     activeLane: LaneDir;
     nextLaneX: number;
     size: number;
+    isOverlapping: boolean;
     draw(): void;
     getX(width: number): number;
     setNextX(width: number, height: number): void;
     update(deltaTime: number): void;
+    setOverlapping(value: boolean): void;
 };
 
 export type WorldProps = {

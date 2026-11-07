@@ -1,7 +1,10 @@
 import type { LaneDir, PlayerProps, WorldProps } from "../../types.ts";
 
 export function createPlayer(ctx: CanvasRenderingContext2D, bbox: WorldProps["bbox"]): PlayerProps {
-    let state: Pick<PlayerProps, "transform" | "activeLane" | "nextLaneX" | "size"> = {
+    let state: Pick<
+        PlayerProps,
+        "transform" | "activeLane" | "nextLaneX" | "size" | "isOverlapping"
+    > = {
         transform: {
             position: {
                 x: 0,
@@ -15,17 +18,25 @@ export function createPlayer(ctx: CanvasRenderingContext2D, bbox: WorldProps["bb
         },
         activeLane: "left",
         nextLaneX: 0,
-        size: 100
+        size: 100,
+        isOverlapping: false
     };
+
+    let hitTimer = 0;
+
     function draw() {
         const { x, y } = state.transform.position;
 
         ctx.fillStyle = "#fff";
-        ctx.shadowColor = "#00eaff";
-        ctx.shadowBlur = 12;
+        const hitIntensity = hitTimer / 0.2;
 
+        ctx.shadowColor = lerpColor(
+            [0, 234, 255], // cyan
+            [255, 51, 51], // red
+            hitIntensity
+        );
+        ctx.shadowBlur = 12 + hitIntensity * 20;
         ctx.fillRect(x, y, state.size, state.size);
-
         ctx.shadowBlur = 0;
     }
     function getX(width: number) {
@@ -51,6 +62,13 @@ export function createPlayer(ctx: CanvasRenderingContext2D, bbox: WorldProps["bb
         }
 
         position.x += difference * 8 * deltaTime;
+        hitTimer = Math.max(0, hitTimer - deltaTime);
+    }
+    function setOverlapping(value: boolean) {
+        if (value && !state.isOverlapping) {
+            hitTimer = 0.2;
+        }
+        state.isOverlapping = value;
     }
 
     return {
@@ -76,6 +94,13 @@ export function createPlayer(ctx: CanvasRenderingContext2D, bbox: WorldProps["bb
         draw,
         getX,
         setNextX,
-        update
+        update,
+        setOverlapping
     };
+}
+
+function lerpColor(start: number[], end: number[], amount: number): string {
+    const channels = start.map((value, index) => Math.round(value + (end[index] - value) * amount));
+
+    return `rgb(${channels.join(",")})`;
 }
