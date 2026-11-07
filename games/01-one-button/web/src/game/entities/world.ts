@@ -3,7 +3,7 @@ import type { ObstacleProps, WorldProps } from "../../types.ts";
 export function createWorld(ctx: CanvasRenderingContext2D, obstacles: ObstacleProps[]): WorldProps {
     const initialSpeed = 180;
     const speedIncrease = 20;
-    const speedInterval = 15;
+    const speedInterval = 3;
     const maxSpeed = 400;
 
     let elapsedTime = 0;
@@ -14,8 +14,8 @@ export function createWorld(ctx: CanvasRenderingContext2D, obstacles: ObstaclePr
         loopId: null,
         lastFrameTime: 0,
         bbox: {
-            left: 0.35,
-            right: 0.65,
+            left: 0,
+            right: 1,
             top: 0,
             bottom: 1
         }
@@ -58,7 +58,7 @@ export function createWorld(ctx: CanvasRenderingContext2D, obstacles: ObstaclePr
         const rightLane = width * state.bbox.right;
 
         ctx.strokeStyle = "#00eaff";
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 5;
         ctx.shadowColor = "#00eaff";
         ctx.shadowBlur = 12;
 

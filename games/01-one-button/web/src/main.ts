@@ -12,9 +12,18 @@ if (!app) {
 
 app.innerHTML = `
   <main class="game">
+  <div class="game__ui">
+  <div class="game__ui__score" id="game-score">0</div>
+</div>
     <canvas class="game__canvas" id="game-canvas"></canvas>
   </main>
 `;
+
+const scoreElement = document.querySelector<HTMLDivElement>("#game-score");
+
+if (!scoreElement) {
+    throw new Error("Score element not found.");
+}
 
 const canvas = document.querySelector<HTMLCanvasElement>("#game-canvas");
 
@@ -51,13 +60,23 @@ function draw() {
     world.draw(width, height);
 }
 const obstacles: ObstacleProps[] = [];
+function getHighestObstacle(): number {
+    return Math.min(...obstacles.map((obstacle) => obstacle.y));
+}
 const world: WorldProps = createWorld(ctx, obstacles);
 const player: PlayerProps = createPlayer(ctx, world.bbox);
-const OBSTACLE_GAP_TIME = 1.5;
-obstacles.push(
-    createObstacle(ctx, world, player, "left", 0),
-    createObstacle(ctx, world, player, "right", -300)
-);
+const SPAWN_MARGIN = 100;
+const MIN_OBSTACLE_GAP = 270;
+const MAX_OBSTACLE_GAP = 360;
+let score = 0;
+function spawnObstacle(y: number) {
+    const lane = Math.random() < 0.5 ? "left" : "right";
+
+    obstacles.push(createObstacle(ctx, world, player, lane, y));
+}
+spawnObstacle(0);
+spawnObstacle(-300);
+spawnObstacle(-600);
 
 function handleLaneChange() {
     player.activeLane = player.activeLane === "left" ? "right" : "left";
@@ -69,11 +88,30 @@ function gameLoop(timestamp: number) {
     world.lastFrameTime = timestamp;
 
     world.update(canvas.clientHeight, deltaTime);
-    obstacles.forEach((obstacle) => obstacle.update(canvas.clientHeight, deltaTime));
+    obstacles.forEach((obstacle) => {
+        obstacle.update(deltaTime);
+
+        if (obstacle.y > canvas.clientHeight) {
+            const gap = Math.max(MIN_OBSTACLE_GAP, MAX_OBSTACLE_GAP - (world.speed - 180) * 0.5);
+            const spawnY = Math.min(getHighestObstacle() - gap, -SPAWN_MARGIN);
+
+            obstacle.respawn(spawnY);
+        }
+
+        if (obstacle.checkPassed(player.transform.position.y)) {
+            score++;
+        }
+    });
     player.update(deltaTime);
 
-    player.setOverlapping(obstacles.some((obstacle) => obstacle.overlapsPlayer()));
-
+    player.setOverlapping(
+        obstacles.some((obstacle) => {
+            const overlaps = obstacle.overlapsPlayer();
+            if (overlaps) score--;
+            return overlaps;
+        })
+    );
+    scoreElement.textContent = String(score);
     draw();
 
     world.loopId = requestAnimationFrame(gameLoop);

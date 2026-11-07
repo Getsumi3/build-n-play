@@ -1,11 +1,29 @@
 .game {
   width: 100%;
   min-height: 100vh;
+  max-width: 640px;
   background: #000;
+  margin: 0 auto;
+  position: relative;
 
   &__canvas {
     display: block;
     width: 100%;
     height: 100vh;
+  }
+
+  &__ui {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    gap: 1rem;
+    display: flex;
+    padding: 1rem;
+    &__score {
+      font-size: 1rem;
+      color: #fff;
+    }
   }
 }

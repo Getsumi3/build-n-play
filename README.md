@@ -6,18 +6,18 @@ A personal game development challenge to build 10 small games, explore different
 
 ## Games
 
-| # | Game | Status |
-|---|---|---|
-| 01 | [One Button](games/01-one-button/README.md) | In development |
-| 02 | Tiny Dungeon | Planned |
-| 03 | Impossible Jump | Planned |
-| 04 | One More Wave | Planned |
-| 05 | The Room | Planned |
-| 06 | Lost in Space | Planned |
-| 07 | Tiny Shop | Planned |
-| 08 | Last Player Standing | Planned |
-| 09 | A Story in 5 Minutes | Planned |
-| 10 | The Final Boss | Planned |
+| #   | Game                                        | Status         |
+| --- | ------------------------------------------- | -------------- |
+| 01  | [One Button](games/01-one-button/README.md) | In development |
+| 02  | Tiny Dungeon                                | Planned        |
+| 03  | Impossible Jump                             | Planned        |
+| 04  | One More Wave                               | Planned        |
+| 05  | The Room                                    | Planned        |
+| 06  | Lost in Space                               | Planned        |
+| 07  | Tiny Shop                                   | Planned        |
+| 08  | Last Player Standing                        | Planned        |
+| 09  | A Story in 5 Minutes                        | Planned        |
+| 10  | The Final Boss                              | Planned        |
 
 ## Repository
 

@@ -16,14 +16,8 @@ export function createObstacle(
     function draw(width: number) {
         primitive(width);
     }
-    function update(height: number, deltaTime: number) {
+    function update(deltaTime: number) {
         state.y += world.speed * deltaTime;
-
-        if (state.y > height) {
-            state.y = -60;
-            state.lane = Math.random() < 0.5 ? "left" : "right";
-            state.wasPassed = false;
-        }
     }
     function primitive(width: number) {
         const laneWidth = (width * (world.bbox.right - world.bbox.left)) / 2;
@@ -59,6 +53,11 @@ export function createObstacle(
             obstacleTop < playerBottom
         );
     }
+    function respawn(y: number) {
+        state.y = y;
+        state.lane = Math.random() < 0.5 ? "left" : "right";
+        state.wasPassed = false;
+    }
     return {
         get lane() {
             return state.lane;
@@ -84,6 +83,7 @@ export function createObstacle(
         draw,
         update,
         checkPassed,
-        overlapsPlayer
+        overlapsPlayer,
+        respawn
     };
 }
