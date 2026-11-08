@@ -3,6 +3,7 @@ import type { ObstacleProps, PlayerProps, WorldProps } from "./types.ts";
 import { createPlayer } from "./game/entities/player.ts";
 import { createWorld } from "./game/entities/world.ts";
 import { createObstacle } from "./game/entities/obstacles.ts";
+import { playHitSound, playLaneSound } from "./game/audio.ts";
 
 const app = document.querySelector<HTMLDivElement>("#app");
 
@@ -122,6 +123,8 @@ function handleLaneChange() {
 
     player.activeLane = player.activeLane === "left" ? "right" : "left";
     player.nextLaneX = player.getX(canvas.clientWidth);
+
+    playLaneSound(player.activeLane);
 }
 
 function handleRestart() {
@@ -153,6 +156,7 @@ function gameLoop(timestamp: number) {
 
     obstacles.forEach((obstacle) => {
         if (obstacle.overlapsPlayer() && obstacle.registerHit()) {
+            playHitSound();
             hits++;
 
             if (hits >= 5) {
