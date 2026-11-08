@@ -27,9 +27,12 @@ export function createObstacle(
 
         ctx.fillStyle = "#fff";
         ctx.shadowColor = "#ff0000";
-        ctx.shadowBlur = 12;
+        ctx.shadowBlur = 10;
 
-        ctx.fillRect(x, state.y, laneWidth, 12);
+        ctx.fillRect(x, state.y, laneWidth, 10);
+
+        ctx.fillStyle = "rgb(255 0 0 / 0.35)";
+        ctx.fillRect(x, state.y + 10, laneWidth, 2);
 
         ctx.shadowBlur = 0;
     }

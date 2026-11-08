@@ -8,6 +8,10 @@ export function createWorld(ctx: CanvasRenderingContext2D, obstacles: ObstaclePr
 
     let elapsedTime = 0;
 
+    let gridOffset = 0;
+    const GRID_SIZE = 24;
+    const GRID_SPEED = 12;
+
     let state: Pick<WorldProps, "lineY" | "speed" | "loopId" | "lastFrameTime" | "bbox"> = {
         lineY: 0,
         speed: 180,
@@ -33,9 +37,75 @@ export function createWorld(ctx: CanvasRenderingContext2D, obstacles: ObstaclePr
         if (state.lineY > height) {
             state.lineY = 0;
         }
+
+        gridOffset = (gridOffset + GRID_SPEED * deltaTime) % GRID_SIZE;
+
+        stars.forEach((star) => {
+            star.y += star.speed * deltaTime;
+
+            if (star.y > 1) {
+                star.y = 0;
+                star.x = Math.random();
+            }
+        });
     }
     function draw(width: number, height: number) {
-        bgEffect(width);
+        const gradient = ctx.createRadialGradient(
+            width / 2,
+            height * 0.4,
+            0,
+            width / 2,
+            height * 0.4,
+            height * 0.8
+        );
+
+        gradient.addColorStop(0, "#101a20");
+        gradient.addColorStop(1, "#050607");
+
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, width, height);
+
+        // Background grid
+        ctx.strokeStyle = "rgba(5, 6, 7, 0.07)";
+        ctx.lineWidth = 1;
+        ctx.shadowColor = "#00eaff";
+        ctx.shadowBlur = 1;
+
+        for (let x = 0; x <= width; x += 24) {
+            ctx.beginPath();
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, height);
+            ctx.stroke();
+        }
+
+        for (let y = -GRID_SIZE; y <= height; y += GRID_SIZE) {
+            const offsetY = y + gridOffset;
+
+            ctx.beginPath();
+            ctx.moveTo(0, offsetY);
+            ctx.lineTo(width, offsetY);
+            ctx.stroke();
+        }
+        ctx.shadowBlur = 0;
+        // Stars
+        stars.forEach((star) => {
+            const alpha =
+                star.alpha * (0.7 + Math.sin((performance.now() / 1000) * star.twinkle) * 0.3);
+
+            ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+            ctx.shadowColor = "#ffffff";
+            ctx.shadowBlur = 6;
+
+            ctx.beginPath();
+            const size =
+                star.size * (0.8 + Math.sin((performance.now() / 1200) * star.twinkle) * 0.2);
+
+            ctx.arc(star.x * width, star.y * height, size, 0, Math.PI * 2);
+            ctx.fill();
+        });
+
+        ctx.shadowBlur = 0;
+
         bounds(width, height);
         obstacles.forEach((obstacle) => obstacle.draw(width));
     }
@@ -106,3 +176,12 @@ export function createWorld(ctx: CanvasRenderingContext2D, obstacles: ObstaclePr
         bounds
     };
 }
+
+const stars = Array.from({ length: 120 }, () => ({
+    x: Math.random(),
+    y: Math.random(),
+    size: Math.random() * 1.5 + 0.5,
+    alpha: Math.random() * 0.6 + 0.2,
+    twinkle: Math.random() * 2 + 1,
+    speed: Math.random() * 0.025 + 0.005
+}));

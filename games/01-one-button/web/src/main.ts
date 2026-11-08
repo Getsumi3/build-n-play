@@ -20,7 +20,7 @@ app.innerHTML = `
               <span>Score: <span id="game-over-score">0</span></span>
               <span>Highest Score: <span id="highest-score">0</span></span>      
           </div>
-          <p class="game__ui__game-over__tap">Tap to restart</p>
+          <p class="game__ui__game-over__tap" id="restart-prompt">Tap to restart</p>
     </div>
     </div>
     <canvas class="game__canvas" id="game-canvas"></canvas>
@@ -28,9 +28,16 @@ app.innerHTML = `
 `;
 
 const scoreElement = document.querySelector<HTMLDivElement>("#game-score");
-
 if (!scoreElement) {
     throw new Error("Score element not found.");
+}
+
+const gameOverlay = document.querySelector<HTMLDivElement>("#game-over");
+const finalScoreElement = document.querySelector<HTMLSpanElement>("#game-over-score");
+const highScoreElement = document.querySelector<HTMLSpanElement>("#highest-score");
+
+if (!gameOverlay || !finalScoreElement || !highScoreElement) {
+    throw new Error("Game over elements not found.");
 }
 
 const canvas = document.querySelector<HTMLCanvasElement>("#game-canvas");
@@ -64,8 +71,8 @@ function draw() {
 
     ctx.clearRect(0, 0, width, height);
 
-    player.draw();
     world.draw(width, height);
+    player.draw();
 }
 const obstacles: ObstacleProps[] = [];
 function getHighestObstacle(): number {
@@ -88,9 +95,47 @@ spawnObstacle(0);
 spawnObstacle(-300);
 spawnObstacle(-600);
 
+function restartGame() {
+    score = 0;
+    hits = 0;
+    isGameOver = false;
+
+    player.activeLane = "left";
+    player.nextLaneX = player.getX(canvas.clientWidth);
+
+    obstacles.forEach((obstacle, index) => {
+        obstacle.respawn(-index * 300);
+    });
+
+    scoreElement.textContent = "0";
+    gameOverlay.classList.remove("is-visible");
+
+    world.lastFrameTime = performance.now();
+    world.loopId = requestAnimationFrame(gameLoop);
+}
+
 function handleLaneChange() {
+    if (isGameOver) {
+        restartGame();
+        return;
+    }
+
     player.activeLane = player.activeLane === "left" ? "right" : "left";
     player.nextLaneX = player.getX(canvas.clientWidth);
+}
+
+function handleRestart() {
+    if (isGameOver) {
+        restartGame();
+    }
+}
+
+function showGameOver() {
+    const highScore = Number(localStorage.getItem("highScore") ?? 0);
+
+    finalScoreElement.textContent = String(score);
+    highScoreElement.textContent = String(highScore);
+    gameOverlay.classList.add("is-visible");
 }
 
 function gameLoop(timestamp: number) {
@@ -102,31 +147,33 @@ function gameLoop(timestamp: number) {
     world.update(canvas.clientHeight, deltaTime);
     player.update(deltaTime);
 
-    // 1. Move all obstacles
     obstacles.forEach((obstacle) => {
         obstacle.update(deltaTime);
     });
 
-    // 2. Detect and register hits
     obstacles.forEach((obstacle) => {
         if (obstacle.overlapsPlayer() && obstacle.registerHit()) {
             hits++;
-            score = Math.max(0, score - 1);
 
             if (hits >= 5) {
                 isGameOver = true;
+                const highScore = Number(localStorage.getItem("highScore") ?? 0);
+
+                if (score > highScore) {
+                    localStorage.setItem("highScore", String(score));
+                }
+
+                showGameOver();
             }
         }
     });
 
-    // 3. Award points for passed obstacles
     obstacles.forEach((obstacle) => {
         if (obstacle.checkPassed(player.transform.position.y)) {
             score++;
         }
     });
 
-    // 4. Respawn obstacles that left the screen
     obstacles.forEach((obstacle) => {
         if (obstacle.y > canvas.clientHeight) {
             const gap = Math.max(MIN_OBSTACLE_GAP, MAX_OBSTACLE_GAP - (world.speed - 180) * 0.5);
@@ -137,7 +184,6 @@ function gameLoop(timestamp: number) {
         }
     });
 
-    // 5. Update visual state and render
     player.setOverlapping(obstacles.some((obstacle) => obstacle.overlapsPlayer()));
 
     scoreElement.textContent = String(score);
@@ -148,6 +194,9 @@ function gameLoop(timestamp: number) {
     }
 }
 window.addEventListener("resize", resizeCanvas);
-window.addEventListener("click", handleLaneChange);
+canvas.addEventListener("click", handleLaneChange);
+document
+    .querySelector<HTMLParagraphElement>("#restart-prompt")
+    ?.addEventListener("click", handleRestart);
 resizeCanvas();
 world.loopId = requestAnimationFrame(gameLoop);
