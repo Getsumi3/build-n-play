@@ -38,8 +38,7 @@ export type ObstacleProps = {
     lane: "left" | "right";
     y: number;
     size: number;
-    wasPassed: boolean;
-    wasHit: boolean;
+    wasProcessed: boolean;
     update(deltaTime: number): void;
     draw(width: number): void;
     checkPassed(playerY: number): boolean;
