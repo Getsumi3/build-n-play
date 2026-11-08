@@ -29,10 +29,10 @@ export function createObstacle(
         ctx.shadowColor = "#ff0000";
         ctx.shadowBlur = 10;
 
-        ctx.fillRect(x, state.y, laneWidth, 10);
+        ctx.fillRect(x, state.y, laneWidth, 20);
 
         ctx.fillStyle = "rgb(255 0 0 / 0.35)";
-        ctx.fillRect(x, state.y + 10, laneWidth, 2);
+        ctx.fillRect(x, state.y + 20, laneWidth, 2);
 
         ctx.shadowBlur = 0;
     }
@@ -48,7 +48,7 @@ export function createObstacle(
         const playerTop = player.transform.position.y;
         const playerBottom = playerTop + player.size;
         const obstacleTop = state.y;
-        const obstacleBottom = state.y + 12;
+        const obstacleBottom = state.y + 20;
 
         return (
             state.lane === player.activeLane &&
