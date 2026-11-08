@@ -39,9 +39,11 @@ export type ObstacleProps = {
     y: number;
     size: number;
     wasPassed: boolean;
+    wasHit: boolean;
     update(deltaTime: number): void;
     draw(width: number): void;
     checkPassed(playerY: number): boolean;
     overlapsPlayer(): boolean;
     respawn(y: number): void;
+    registerHit(): boolean;
 };

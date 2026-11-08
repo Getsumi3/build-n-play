@@ -7,11 +7,12 @@ export function createObstacle(
     lane: LaneDir = "left",
     y: number = 0
 ): ObstacleProps {
-    let state: Pick<ObstacleProps, "lane" | "y" | "size" | "wasPassed"> = {
+    let state: Pick<ObstacleProps, "lane" | "y" | "size" | "wasPassed" | "wasHit"> = {
         lane,
         y,
         size: 1,
-        wasPassed: false
+        wasPassed: false,
+        wasHit: false
     };
     function draw(width: number) {
         primitive(width);
@@ -57,6 +58,13 @@ export function createObstacle(
         state.y = y;
         state.lane = Math.random() < 0.5 ? "left" : "right";
         state.wasPassed = false;
+        state.wasHit = false;
+    }
+    function registerHit(): boolean {
+        if (state.wasHit) return false;
+
+        state.wasHit = true;
+        return true;
     }
     return {
         get lane() {
@@ -80,10 +88,17 @@ export function createObstacle(
         set wasPassed(value) {
             state.wasPassed = value;
         },
+        get wasHit() {
+            return state.wasHit;
+        },
+        set wasHit(value) {
+            state.wasHit = value;
+        },
         draw,
         update,
         checkPassed,
         overlapsPlayer,
-        respawn
+        respawn,
+        registerHit
     };
 }

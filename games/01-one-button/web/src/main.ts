@@ -69,6 +69,8 @@ const SPAWN_MARGIN = 100;
 const MIN_OBSTACLE_GAP = 270;
 const MAX_OBSTACLE_GAP = 360;
 let score = 0;
+let hits = 0;
+let isGameOver = false;
 function spawnObstacle(y: number) {
     const lane = Math.random() < 0.5 ? "left" : "right";
 
@@ -84,6 +86,8 @@ function handleLaneChange() {
 }
 
 function gameLoop(timestamp: number) {
+    if (isGameOver) return;
+
     const deltaTime = (timestamp - world.lastFrameTime) / 1000;
     world.lastFrameTime = timestamp;
 
@@ -104,13 +108,18 @@ function gameLoop(timestamp: number) {
     });
     player.update(deltaTime);
 
-    player.setOverlapping(
-        obstacles.some((obstacle) => {
-            const overlaps = obstacle.overlapsPlayer();
-            if (overlaps) score--;
-            return overlaps;
-        })
-    );
+    obstacles.forEach((obstacle) => {
+        if (obstacle.overlapsPlayer() && obstacle.registerHit()) {
+            hits++;
+            score = Math.max(0, score - 1);
+
+            if (hits >= 5) {
+                isGameOver = true;
+            }
+        }
+    });
+
+    player.setOverlapping(obstacles.some((obstacle) => obstacle.overlapsPlayer()));
     scoreElement.textContent = String(score);
     draw();
 
