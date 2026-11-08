@@ -13,8 +13,16 @@ if (!app) {
 app.innerHTML = `
   <main class="game">
   <div class="game__ui">
-  <div class="game__ui__score" id="game-score">0</div>
-</div>
+      <div class="game__ui__score" id="game-score">0</div>
+      <div class="game__ui__game-over" id="game-over">
+          <h1>Game Over</h1>
+          <div class="game__ui__game-over__score">
+              <span>Score: <span id="game-over-score">0</span></span>
+              <span>Highest Score: <span id="highest-score">0</span></span>      
+          </div>
+          <p class="game__ui__game-over__tap">Tap to restart</p>
+    </div>
+    </div>
     <canvas class="game__canvas" id="game-canvas"></canvas>
   </main>
 `;
