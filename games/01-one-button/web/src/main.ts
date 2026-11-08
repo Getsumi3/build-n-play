@@ -92,22 +92,14 @@ function gameLoop(timestamp: number) {
     world.lastFrameTime = timestamp;
 
     world.update(canvas.clientHeight, deltaTime);
-    obstacles.forEach((obstacle) => {
-        obstacle.update(deltaTime);
-
-        if (obstacle.y > canvas.clientHeight) {
-            const gap = Math.max(MIN_OBSTACLE_GAP, MAX_OBSTACLE_GAP - (world.speed - 180) * 0.5);
-            const spawnY = Math.min(getHighestObstacle() - gap, -SPAWN_MARGIN);
-
-            obstacle.respawn(spawnY);
-        }
-
-        if (obstacle.checkPassed(player.transform.position.y)) {
-            score++;
-        }
-    });
     player.update(deltaTime);
 
+    // 1. Move all obstacles
+    obstacles.forEach((obstacle) => {
+        obstacle.update(deltaTime);
+    });
+
+    // 2. Detect and register hits
     obstacles.forEach((obstacle) => {
         if (obstacle.overlapsPlayer() && obstacle.registerHit()) {
             hits++;
@@ -119,11 +111,33 @@ function gameLoop(timestamp: number) {
         }
     });
 
+    // 3. Award points for passed obstacles
+    obstacles.forEach((obstacle) => {
+        if (obstacle.checkPassed(player.transform.position.y)) {
+            score++;
+        }
+    });
+
+    // 4. Respawn obstacles that left the screen
+    obstacles.forEach((obstacle) => {
+        if (obstacle.y > canvas.clientHeight) {
+            const gap = Math.max(MIN_OBSTACLE_GAP, MAX_OBSTACLE_GAP - (world.speed - 180) * 0.5);
+
+            const spawnY = Math.min(getHighestObstacle() - gap, -SPAWN_MARGIN);
+
+            obstacle.respawn(spawnY);
+        }
+    });
+
+    // 5. Update visual state and render
     player.setOverlapping(obstacles.some((obstacle) => obstacle.overlapsPlayer()));
+
     scoreElement.textContent = String(score);
     draw();
 
-    world.loopId = requestAnimationFrame(gameLoop);
+    if (!isGameOver) {
+        world.loopId = requestAnimationFrame(gameLoop);
+    }
 }
 window.addEventListener("resize", resizeCanvas);
 window.addEventListener("click", handleLaneChange);
