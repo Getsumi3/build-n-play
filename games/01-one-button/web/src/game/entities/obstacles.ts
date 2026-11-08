@@ -7,12 +7,11 @@ export function createObstacle(
     lane: LaneDir = "left",
     y: number = 0
 ): ObstacleProps {
-    let state: Pick<ObstacleProps, "lane" | "y" | "size" | "wasPassed" | "wasHit"> = {
+    let state: Pick<ObstacleProps, "lane" | "y" | "size" | "wasProcessed"> = {
         lane,
         y,
         size: 1,
-        wasPassed: false,
-        wasHit: false
+        wasProcessed: false
     };
     function draw(width: number) {
         primitive(width);
@@ -35,8 +34,8 @@ export function createObstacle(
         ctx.shadowBlur = 0;
     }
     function checkPassed(playerY: number): boolean {
-        if (!state.wasPassed && state.y > playerY + player.size) {
-            state.wasPassed = true;
+        if (!state.wasProcessed && state.y > playerY + player.size) {
+            state.wasProcessed = true;
             return true;
         }
 
@@ -57,13 +56,12 @@ export function createObstacle(
     function respawn(y: number) {
         state.y = y;
         state.lane = Math.random() < 0.5 ? "left" : "right";
-        state.wasPassed = false;
-        state.wasHit = false;
+        state.wasProcessed = false;
     }
     function registerHit(): boolean {
-        if (state.wasHit) return false;
+        if (state.wasProcessed) return false;
 
-        state.wasHit = true;
+        state.wasProcessed = true;
         return true;
     }
     return {
@@ -82,17 +80,11 @@ export function createObstacle(
         get size() {
             return state.size;
         },
-        get wasPassed() {
-            return state.wasPassed;
+        get wasProcessed() {
+            return state.wasProcessed;
         },
-        set wasPassed(value) {
-            state.wasPassed = value;
-        },
-        get wasHit() {
-            return state.wasHit;
-        },
-        set wasHit(value) {
-            state.wasHit = value;
+        set wasProcessed(value) {
+            state.wasProcessed = value;
         },
         draw,
         update,
